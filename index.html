@@ -1,25 +1,111 @@
-<!DOCTYPE html>
-<html lang="es">
+<!doctype html>
+<html lang="es" class="h-full scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Notas PWA</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d6efd">
-    <style>
-        body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:1rem;}
-        h1{font-size:1.5rem;margin-bottom:1rem;}
-        #notes{list-style:none;padding:0;}
-        #notes li{background:#f6f6f6;border-radius:8px;padding:.5rem;margin-bottom:.5rem;}
-        textarea{width:100%;height:6rem;padding:.5rem;margin-bottom:.5rem;}
-        button{padding:.5rem 1rem;border:none;border-radius:6px;background:#0d6efd;color:#fff;font-size:1rem;}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Notas · PWA</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d6efd">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
-<body>
-    <h1>Mis Notas</h1>
-    <textarea id="newNote" placeholder="Escribe tu nota..."></textarea>
-    <button id="addBtn">Guardar</button>
-    <ul id="notes"></ul>
-    <script src="app.js"></script>
+<body class="h-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 text-slate-800 dark:text-slate-100">
+  <header class="sticky top-0 z-10 backdrop-blur bg-white/60 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-semibold">Mis Notas</h1>
+      <button id="toggleDark" class="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700" title="Cambiar tema">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.364-7.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 pb-24 pt-6">
+    <div class="mb-6">
+      <textarea id="newNote" rows="3" placeholder="Escribe tu nota…" class="w-full resize-none rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+      <button id="addBtn" class="mt-3 w-full py-3 font-medium rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 disabled:pointer-events-none">Guardar nota</button>
+    </div>
+
+    <ul id="notes" class="space-y-3"></ul>
+  </main>
+
+  <button id="clearBtn" class="fixed bottom-6 right-6 p-4 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg hidden" title="Eliminar todas las notas">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <script>
+    const listEl = document.getElementById('notes');
+    const newNoteEl = document.getElementById('newNote');
+    const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function loadNotes() {
+      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+      render(notes);
+    }
+
+    function saveNotes(notes) {
+      localStorage.setItem('notes', JSON.stringify(notes));
+      render(notes);
+    }
+
+    function render(notes) {
+      listEl.innerHTML = '';
+      notes.forEach((n, i) => {
+        const li = document.createElement('li');
+        li.className = 'group rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow flex items-start gap-3 p-4';
+        li.innerHTML = `<div class="flex-1 whitespace-pre-wrap break-words">${n.text}</div>
+                        <div class="flex flex-col items-end gap-2">
+                          <time class="text-xs text-slate-500 dark:text-slate-400">${new Date(n.date).toLocaleString()}</time>
+                          <button class="delete opacity-0 group-hover:opacity-100 transition" title="Eliminar nota">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>`;
+        li.querySelector('.delete').addEventListener('click', () => {
+          if (confirm('¿Eliminar esta nota?')) {
+            notes.splice(i, 1);
+            saveNotes(notes);
+          }
+        });
+        listEl.appendChild(li);
+      });
+      clearBtn.classList.toggle('hidden', notes.length < 2);
+    }
+
+    addBtn.addEventListener('click', () => {
+      const text = newNoteEl.value.trim();
+      if (!text) return;
+      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+      notes.unshift({ text, date: Date.now() });
+      newNoteEl.value = '';
+      saveNotes(notes);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (confirm('¿Eliminar TODAS las notas?')) {
+        saveNotes([]);
+      }
+    });
+
+    // Dark mode toggle
+    const toggleDark = document.getElementById('toggleDark');
+    function setDark(on) {
+      document.documentElement.classList.toggle('dark', on);
+      localStorage.setItem('dark', on ? '1' : '0');
+    }
+    toggleDark.addEventListener('click', () => setDark(!document.documentElement.classList.contains('dark')));
+    setDark(localStorage.getItem('dark') === '1' || (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('dark')));
+
+    // SW
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+    loadNotes();
+  </script>
 </body>
 </html>
