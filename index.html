@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notas PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:1rem;}
+        h1{font-size:1.5rem;margin-bottom:1rem;}
+        #notes{list-style:none;padding:0;}
+        #notes li{background:#f6f6f6;border-radius:8px;padding:.5rem;margin-bottom:.5rem;}
+        textarea{width:100%;height:6rem;padding:.5rem;margin-bottom:.5rem;}
+        button{padding:.5rem 1rem;border:none;border-radius:6px;background:#0d6efd;color:#fff;font-size:1rem;}
+    </style>
+</head>
+<body>
+    <h1>Mis Notas</h1>
+    <textarea id="newNote" placeholder="Escribe tu nota..."></textarea>
+    <button id="addBtn">Guardar</button>
+    <ul id="notes"></ul>
+    <script src="app.js"></script>
+</body>
+</html>
